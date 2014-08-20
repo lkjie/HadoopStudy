@@ -1,25 +1,31 @@
 package wordcount;
 
 import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.conf.Configured;
 import org.apache.hadoop.fs.*;
 import org.apache.hadoop.io.IOUtils;
 import org.apache.hadoop.io.Text;
 import org.apache.hadoop.io.compress.GzipCodec;
 import org.apache.hadoop.util.Progressable;
+import org.apache.hadoop.util.Tool;
+import org.apache.hadoop.util.ToolRunner;
 
 import java.io.*;
 import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URL;
+import java.util.Map;
 
 /**
  * Created by lwj on 14-8-14.
  */
 public class MyHad {
+    static {
+        System.out.println("aa");}
 //    static {
 //        URL.setURLStreamHandlerFactory(new FsUrlStreamHandlerFactory());
 //    }
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws Exception {
 //        InputStream in = null;
 //        try{
 //            in = new URL("hdfs://localhost:9000/user/hadoop/input/1.txt").openStream();
@@ -63,6 +69,8 @@ public class MyHad {
 //        System.out.println(stat.getPath());
 
 //        Configuration conf = new Configuration();
+//        conf.addResource("1.xml");
+//        System.out.println(conf.get("color"));
 //        FileSystem fs = FileSystem.get(URI.create("/home/lwj"),conf);
 ////        FileStatus[] status = fs.listStatus(new Path("/home/lwj"));
 //        FileStatus[] status = fs.globStatus(new Path("/home/lwj/*a*"),new PathFilter() {
@@ -78,6 +86,24 @@ public class MyHad {
 
 //        Class<?> codecClass = Class.forName(org.apache.hadoop.io.compress.GzipCodec);
 
+        class ConfigurationPrinter extends Configured implements Tool {
+
+            @Override
+            public int run(String[] args) throws Exception {
+                Configuration.addDefaultResource("1.xml");
+                Configuration conf = getConf();
+                for(Map.Entry<String,String> entry:conf){
+                    System.out.print(entry.getKey()+"="+entry.getValue()+"\n");
+                }
+                return 0;
+            }
+        }
+
+        int exitcode = ToolRunner.run(new ConfigurationPrinter(),args);
+        System.out.println(exitcode);
+
+        String quality = "123342";
+        quality.matches("[01459]");
     }
 
     public int add(int a,int b){

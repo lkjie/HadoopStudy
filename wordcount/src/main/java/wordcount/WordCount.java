@@ -14,38 +14,44 @@ package wordcount;
 
 public class WordCount {
 
-    public static class Map extends Mapper<LongWritable, Text, Text, IntWritable> {
-        private final static IntWritable one = new IntWritable(1);
-        private Text word = new Text();
+    public static class Map extends Mapper<LongWritable, Text, IntWritable, IntWritable> {
+        IntWritable one = new IntWritable(1);
 
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-            String line = value.toString();
-            StringTokenizer tokenizer = new StringTokenizer(line);
-            while (tokenizer.hasMoreTokens()) {
-                word.set(tokenizer.nextToken());
-                context.write(word, one);
-            }
+//            StringTokenizer tokenizer = new StringTokenizer(line);
+//            while (tokenizer.hasMoreTokens()) {
+//                word.set(tokenizer.nextToken());
+//                context.write(word, one);
+//            }
+            String[] s = value.toString().split("\t");
+            context.write(new IntWritable(Integer.parseInt(s[1])),one);
         }
     }
 
-    public static class Reduce extends Reducer<Text, IntWritable, Text, IntWritable> {
+    public static class Reduce extends Reducer<IntWritable, IntWritable, IntWritable, IntWritable> {
 
-        public void reduce(Text key, Iterable<IntWritable> values, Context context)
+        public void reduce(IntWritable key, Iterable<IntWritable> values, Context context)
                 throws IOException, InterruptedException {
-            int sum = 0;
-            for (IntWritable val : values) {
-                sum += val.get();
+//            int sum = 0;
+//            for (IntWritable val : values) {
+//                sum += val.get();
+//            }
+//            context.write(key, new IntWritable(sum));
+            int csv = 0;
+            for(IntWritable val:values){
+                csv++;
             }
-            context.write(key, new IntWritable(sum));
+            context.write(key,new IntWritable(csv));
         }
     }
 
     public static void main(String[] args) throws Exception {
         Configuration conf = new Configuration();
+        conf.set("mapreduce.input.keyvaluelinerecordreader.key.value.separator", ",");
 
         Job job = new Job(conf, "wordcount");
 
-        job.setOutputKeyClass(Text.class);
+        job.setOutputKeyClass(IntWritable.class);
         job.setOutputValueClass(IntWritable.class);
 
         job.setMapperClass(Map.class);
@@ -54,8 +60,8 @@ public class WordCount {
         job.setInputFormatClass(TextInputFormat.class);
         job.setOutputFormatClass(TextOutputFormat.class);
 
-        FileInputFormat.addInputPath(job, new Path("/home/lwj/hadoop/input"));
-        FileOutputFormat.setOutputPath(job, new Path("/home/lwj/hadoop/output"));
+        FileInputFormat.addInputPath(job, new Path("/home/lwj/hadoop/output2"));
+        FileOutputFormat.setOutputPath(job, new Path("/home/lwj/hadoop/output3"));
 
         job.waitForCompletion(true);
     }
